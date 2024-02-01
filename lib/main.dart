@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 // ignore: unused_import
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 
-
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) {
+    runApp(const MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -442,8 +446,6 @@ class _MyComandaPageState extends State<MyComandaPage> {
     }
   }
 
-  
-
   Future<List<int>> testTicket(
       List<Map<String, String>> articulosSeleccionados) async {
     List<int> bytes = [];
@@ -468,20 +470,23 @@ class _MyComandaPageState extends State<MyComandaPage> {
     bytes += generator.text('Artículos Seleccionados:',
         styles: const PosStyles(bold: true));
 
-    // Imprimir detalles de artículos seleccionados con código de barras
-for (var articulo in articulosSeleccionados) {
-  bytes += generator.text('${articulo["nombre"]} - ${articulo["id"]}');
+    for (var articulo in articulosSeleccionados) {
+      // Obtener el ID como cadena
+      final String id = articulo["id"].toString();
 
-  // Obtener el ID como cadena
-  final String barData = articulo["id"].toString();
-  print(barData);
+      // Imprimir detalles del artículo
+      bytes += generator.text('${articulo["nombre"]} ');
+      //  print(detalleArticulo);
 
-  //final List<int> barData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 4];
-    //bytes += generator.barcode(Barcode.upcA(barData));
-}
+      //QR code
+      //bytes += generator.qrcode(id);
 
+      // BarCode 
+      bytes += generator.barcode(Barcode.itf(id.split('')));
 
-
+      // Agregar un salto de línea para separar cada artículo
+      bytes.add(10);
+    }
 
     bytes += generator.feed(2);
     bytes += generator.cut();
@@ -513,26 +518,26 @@ for (var articulo in articulosSeleccionados) {
   }
 
   void _imprimirSeleccionados() {
-  // ignore: avoid_print
-  print('Artículos Seleccionados:');
-
-  List<Map<String, String>> articulosSeleccionados = [];
-
-  seleccionados.forEach((categoria, listaSeleccionados) {
     // ignore: avoid_print
-    print('$categoria: $listaSeleccionados');
-    articulosSeleccionados.addAll(listaSeleccionados);
-  });
+    print('Artículos Seleccionados:');
 
-  printTest(articulosSeleccionados);
+    List<Map<String, String>> articulosSeleccionados = [];
 
-  _showSuccessAlert();
+    seleccionados.forEach((categoria, listaSeleccionados) {
+      // ignore: avoid_print
+      print('$categoria: $listaSeleccionados');
+      articulosSeleccionados.addAll(listaSeleccionados);
+    });
 
-  setState(() {
-    seleccionados.clear();
-    articulosMostrados.clear();
-  });
-}
+    printTest(articulosSeleccionados);
+
+    _showSuccessAlert();
+
+    setState(() {
+      seleccionados.clear();
+      articulosMostrados.clear();
+    });
+  }
 
   void _showSuccessAlert() {
     showDialog(
