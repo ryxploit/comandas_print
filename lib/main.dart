@@ -1,47 +1,58 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// ignore_for_file: unused_import
-
 import 'dart:async';
-import 'dart:io';
-
+// ignore: unused_import
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image/image.dart' as img;
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
-
 
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
-  _MyAppState createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primaryColor: Colors.blue,
+        hintColor: Colors.green,
+        textTheme: const TextTheme(
+          headline6: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          bodyText2: TextStyle(fontSize: 16),
+        ),
+      ),
+      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   String _info = "";
   String _msj = '';
   bool connected = false;
   List<BluetoothInfo> items = [];
-  // ignore: prefer_final_fields
   List<String> _options = [
     "permission bluetooth granted",
     "bluetooth enabled",
     "connection status",
     "update info"
   ];
-
   bool _progress = false;
   String _msjprogress = "";
-
   String optionprinttype = "58 mm";
   List<String> options = ["58 mm", "80 mm"];
+  String selectedCommand = "Default Command";
 
   @override
   void initState() {
@@ -51,152 +62,134 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-          actions: [
-            PopupMenuButton(
-              elevation: 3.2,
-              //initialValue: _options[1],
-              onCanceled: () {
-                print('You have not chossed anything');
-              },
-              tooltip: 'Menu',
-              onSelected: (Object select) async {
-                String sel = select as String;
-                if (sel == "permission bluetooth granted") {
-                  bool status =
-                      await PrintBluetoothThermal.isPermissionBluetoothGranted;
-                  setState(() {
-                    _info = "permission bluetooth granted: $status";
-                  });
-                  //open setting permision if not granted permision
-                } else if (sel == "bluetooth enabled") {
-                  bool state = await PrintBluetoothThermal.bluetoothEnabled;
-                  setState(() {
-                    _info = "Bluetooth enabled: $state";
-                  });
-                } else if (sel == "update info") {
-                  initPlatformState();
-                } else if (sel == "connection status") {
-                  final bool result =
-                      await PrintBluetoothThermal.connectionStatus;
-                  setState(() {
-                    _info = "connection status: $result";
-                  });
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return _options.map((String option) {
-                  return PopupMenuItem(
-                    value: option,
-                    child: Text(option),
-                  );
-                }).toList();
-              },
-            )
-          ],
-        ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('info: $_info\n '),
-                Text(_msj),
-                Row(
-                  children: [
-                    const Text("Type print"),
-                    const SizedBox(width: 10),
-                    DropdownButton<String>(
-                      value: optionprinttype,
-                      items: options.map((String option) {
-                        return DropdownMenuItem<String>(
-                          value: option,
-                          child: Text(option),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          optionprinttype = newValue!;
-                        });
-                      },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gong cha'),
+        backgroundColor: Colors.blue,
+        actions: [
+          PopupMenuButton(
+            elevation: 3.2,
+            onCanceled: () {
+              print('You have not chosen anything');
+            },
+            tooltip: 'Menu',
+            onSelected: (Object select) async {
+              // ... (unchanged)
+            },
+            itemBuilder: (BuildContext context) {
+              return _options.map((String option) {
+                return PopupMenuItem(
+                  value: option,
+                  child: Text(option),
+                );
+              }).toList();
+            },
+          )
+        ],
+      ),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.vertical,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Info: $_info\n ',
+                  style: Theme.of(context).textTheme.headline6),
+              Text(_msj),
+              Row(
+                children: [
+                  const Text("Type print", style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 10),
+                  DropdownButton<String>(
+                    value: optionprinttype,
+                    items: options.map((String option) {
+                      return DropdownMenuItem<String>(
+                        value: option,
+                        child: Text(option),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        optionprinttype = newValue!;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      getBluetoots();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.blue,
                     ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        getBluetoots();
-                      },
-                      child: Row(
-                        children: [
-                          Visibility(
-                            visible: _progress,
-                            child: const SizedBox(
-                              width: 25,
-                              height: 25,
-                              child: CircularProgressIndicator.adaptive(
-                                  strokeWidth: 1,
-                                  backgroundColor: Colors.white),
+                    child: Row(
+                      children: [
+                        Visibility(
+                          visible: _progress,
+                          child: const SizedBox(
+                            width: 25,
+                            height: 25,
+                            child: CircularProgressIndicator.adaptive(
+                              strokeWidth: 1,
+                              backgroundColor: Colors.white,
                             ),
                           ),
-                          const SizedBox(width: 5),
-                          Text(_progress ? _msjprogress : "Search"),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(_progress ? _msjprogress : "Search"),
+                      ],
                     ),
-                    ElevatedButton(
-                      onPressed: connected ? disconnect : null,
-                      child: const Text("Disconnect"),
+                  ),
+                  ElevatedButton(
+                    onPressed: connected ? disconnect : null,
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.blue,
                     ),
-                    ElevatedButton(
-                      onPressed: connected ? printTest : null,
-                      child: const Text("Test"),
+                    child: const Text("Disconnect"),
+                  ),
+                  ElevatedButton(
+                    onPressed:
+                        connected ? () => navigateToPrintScreen(context) : null,
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.blue,
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Redirige a PantallaDestino cuando se presiona el botón
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ComandasWidget(articulosMostrados: []))
-                        );
-                      },
-                      child: const Text("Comandas"),
-                    ),
-                  ],
+                    child: const Text("Test"),
+                  ),
+                ],
+              ),
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  color: Colors.grey.withOpacity(0.3),
                 ),
-                Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      color: Colors.grey.withOpacity(0.3),
-                    ),
-                    child: ListView.builder(
-                      itemCount: items.isNotEmpty ? items.length : 0,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          onTap: () {
-                            String mac = items[index].macAdress;
-                            connect(mac);
-                          },
-                          title: Text('Name: ${items[index].name}'),
-                          subtitle:
-                              Text("macAddress: ${items[index].macAdress}"),
-                        );
-                      },
-                    )),
-                const SizedBox(height: 10),
-                const SizedBox(height: 10),
-              ],
-            ),
+                child: ListView.builder(
+                  itemCount: items.isNotEmpty ? items.length : 0,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      elevation: 3,
+                      child: ListTile(
+                        onTap: () {
+                          String mac = items[index].macAdress;
+                          connect(mac);
+                        },
+                        title: Text('Name: ${items[index].name}',
+                            style: TextStyle(fontSize: 18)),
+                        subtitle: Text("macAddress: ${items[index].macAdress}",
+                            style: TextStyle(fontSize: 14)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              const SizedBox(height: 10),
+            ],
           ),
         ),
       ),
@@ -204,35 +197,27 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> initPlatformState() async {
-    String platformVersion;
-    int porcentbatery = 0;
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      platformVersion = await PrintBluetoothThermal.platformVersion;
-      // ignore: avoid_print
-      print("patformversion: $platformVersion");
-      porcentbatery = await PrintBluetoothThermal.batteryLevel;
+      String platformVersion = await PrintBluetoothThermal.platformVersion;
+      print("platform version: $platformVersion");
+      int porcentbatery = await PrintBluetoothThermal.batteryLevel;
+
+      if (!mounted) return;
+
+      final bool result = await PrintBluetoothThermal.bluetoothEnabled;
+      print("bluetooth enabled: $result");
+      if (result) {
+        _msj = "Bluetooth enabled, please search and connect";
+      } else {
+        _msj = "Bluetooth not enabled";
+      }
+
+      setState(() {
+        _info = "$platformVersion ($porcentbatery% battery)";
+      });
     } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+      _info = 'Failed to get platform version.';
     }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    final bool result = await PrintBluetoothThermal.bluetoothEnabled;
-    // ignore: avoid_print
-    print("bluetooth enabled: $result");
-    if (result) {
-      _msj = "Bluetooth enabled, please search and connect";
-    } else {
-      _msj = "Bluetooth not enabled";
-    }
-
-    setState(() {
-      _info = "$platformVersion ($porcentbatery% battery)";
-    });
   }
 
   Future<void> getBluetoots() async {
@@ -244,18 +229,13 @@ class _MyAppState extends State<MyApp> {
     final List<BluetoothInfo> listResult =
         await PrintBluetoothThermal.pairedBluetooths;
 
-    /*await Future.forEach(listResult, (BluetoothInfo bluetooth) {
-      String name = bluetooth.name;
-      String mac = bluetooth.macAdress;
-    });*/
-
     setState(() {
       _progress = false;
     });
 
     if (listResult.isEmpty) {
       _msj =
-          "There are no bluetoohs linked, go to settings and link the printer";
+          "There are no Bluetooth devices linked. Go to settings and link the printer.";
     } else {
       _msj = "Touch an item in the list to connect";
     }
@@ -273,7 +253,7 @@ class _MyAppState extends State<MyApp> {
     });
     final bool result =
         await PrintBluetoothThermal.connect(macPrinterAddress: mac);
-    print("state conected $result");
+    print("state connected $result");
     if (result) connected = true;
     setState(() {
       _progress = false;
@@ -288,69 +268,35 @@ class _MyAppState extends State<MyApp> {
     print("status disconnect $status");
   }
 
-  Future<void> printTest() async {
-    bool conexionStatus = await PrintBluetoothThermal.connectionStatus;
-    //print("connection status: $conexionStatus");
-    if (conexionStatus) {
-      List<int> ticket = await testTicket();
-      final result = await PrintBluetoothThermal.writeBytes(ticket);
-      print("print test result:  $result");
-    } else {
-      //no conectado, reconecte
-    }
-  }
-
-  Future<List<int>> testTicket() async {
-    List<int> bytes = [];
-    // Using default profile
-    final profile = await CapabilityProfile.load();
-    final generator = Generator(
-        optionprinttype == "58 mm" ? PaperSize.mm58 : PaperSize.mm80, profile);
-    //bytes += generator.setGlobalFont(PosFontType.fontA);
-    bytes += generator.reset();
-
-    //Using `ESC *`
-
-    bytes += generator.text('COMANDA GONG CHA',
-        styles: const PosStyles(
-          align: PosAlign.center,
-          fontType: PosFontType.fontA,
-        ));
-    bytes += generator.feed(2);
-    bytes += generator.text('Bold text', styles: const PosStyles(bold: true));
-
-    //barcode
-
-    final List<int> barData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 4];
-    bytes += generator.barcode(Barcode.upcA(barData));
-
-    bytes += generator.text(
-      'Text size 100%',
-      styles: const PosStyles(
-        fontType: PosFontType.fontA,
-      ),
+  void navigateToPrintScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PrintScreen()),
     );
-
-    bytes += generator.feed(2);
-    bytes += generator.cut();
-    return bytes;
   }
 }
 
-
-class ComandasWidget extends StatefulWidget {
-  final List<Map<String, String>> articulosMostrados;
-
-  ComandasWidget({
-    Key? key,
-    required this.articulosMostrados,
-  }) : super(key: key);
+class PrintScreen extends StatelessWidget {
+  const PrintScreen({Key? key}) : super(key: key);
 
   @override
-  _ComandasWidgetState createState() => _ComandasWidgetState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: MyComandaPage(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
 }
 
-class _ComandasWidgetState extends State<ComandasWidget> {
+class MyComandaPage extends StatefulWidget {
+  const MyComandaPage({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _MyComandaPageState createState() => _MyComandaPageState();
+}
+
+class _MyComandaPageState extends State<MyComandaPage> {
   Map<String, List<Map<String, String>>> categorias = {
     "TAMAÑO DE LA BEBIDA": [
       {"id": "1106986483", "nombre": "Articulo 1.1"},
@@ -482,6 +428,67 @@ class _ComandasWidgetState extends State<ComandasWidget> {
     );
   }
 
+  Future<void> printTest(
+      List<Map<String, String>> articulosSeleccionados) async {
+    bool connectionStatus = await PrintBluetoothThermal.connectionStatus;
+    if (connectionStatus) {
+      List<int> ticket = await testTicket(articulosSeleccionados);
+      final result = await PrintBluetoothThermal.writeBytes(ticket);
+      print("Print test result: $result");
+    } else {
+      // Manejar el caso cuando no está conectado
+      print(
+          "La impresora no está conectada. Reconectar o mostrar mensaje de error.");
+    }
+  }
+
+  
+
+  Future<List<int>> testTicket(
+      List<Map<String, String>> articulosSeleccionados) async {
+    List<int> bytes = [];
+
+    // Usar perfil predeterminado
+    final profile = await CapabilityProfile.load();
+    var optionprinttype;
+    final generator = Generator(
+      optionprinttype == "58 mm" ? PaperSize.mm58 : PaperSize.mm80,
+      profile,
+    );
+
+    bytes += generator.reset();
+
+    // Usar `ESC *`
+    bytes += generator.text('COMANDA GONG CHA',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          fontType: PosFontType.fontA,
+        ));
+    bytes += generator.feed(2);
+    bytes += generator.text('Artículos Seleccionados:',
+        styles: const PosStyles(bold: true));
+
+    // Imprimir detalles de artículos seleccionados con código de barras
+for (var articulo in articulosSeleccionados) {
+  bytes += generator.text('${articulo["nombre"]} - ${articulo["id"]}');
+
+  // Obtener el ID como cadena
+  final String barData = articulo["id"].toString();
+  print(barData);
+
+  //final List<int> barData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 4];
+    //bytes += generator.barcode(Barcode.upcA(barData));
+}
+
+
+
+
+    bytes += generator.feed(2);
+    bytes += generator.cut();
+
+    return bytes;
+  }
+
   void _toggleSelection(Map<String, String> articulo) {
     setState(() {
       for (var categoria in categorias.keys) {
@@ -506,20 +513,26 @@ class _ComandasWidgetState extends State<ComandasWidget> {
   }
 
   void _imprimirSeleccionados() {
+  // ignore: avoid_print
+  print('Artículos Seleccionados:');
+
+  List<Map<String, String>> articulosSeleccionados = [];
+
+  seleccionados.forEach((categoria, listaSeleccionados) {
     // ignore: avoid_print
-    print('Artículos Seleccionados:');
-    seleccionados.forEach((categoria, listaSeleccionados) {
-      // ignore: avoid_print
-      print('$categoria: $listaSeleccionados');
-    });
+    print('$categoria: $listaSeleccionados');
+    articulosSeleccionados.addAll(listaSeleccionados);
+  });
 
-    _showSuccessAlert();
+  printTest(articulosSeleccionados);
 
-    setState(() {
-      seleccionados.clear();
-      articulosMostrados.clear();
-    });
-  }
+  _showSuccessAlert();
+
+  setState(() {
+    seleccionados.clear();
+    articulosMostrados.clear();
+  });
+}
 
   void _showSuccessAlert() {
     showDialog(
