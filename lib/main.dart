@@ -1,5 +1,6 @@
+// ignore_for_file: avoid_print, duplicate_ignore
+
 import 'dart:async';
-import 'dart:convert';
 // ignore: unused_import
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
@@ -15,76 +16,80 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.blue,
-        hintColor: Colors.green,
+        primaryColor: Colors.pink,
+        hintColor: Colors.grey,
         textTheme: const TextTheme(
+          // ignore: deprecated_member_use
           headline6: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          // ignore: deprecated_member_use
           bodyText2: TextStyle(fontSize: 16),
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
+      home: const PantallaPrincipal(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+class PantallaPrincipal extends StatefulWidget {
+  const PantallaPrincipal({super.key});
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  // ignore: library_private_types_in_public_api
+  _PantallaPrincipalState createState() => _PantallaPrincipalState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _PantallaPrincipalState extends State<PantallaPrincipal> {
   String _info = "";
   String _msj = '';
-  bool connected = false;
+  bool conectado = false;
   List<BluetoothInfo> items = [];
-  List<String> _options = [
-    "permission bluetooth granted",
-    "bluetooth enabled",
-    "connection status",
-    "update info"
+  final List<String> _opciones = [
+    "permiso de bluetooth concedido",
+    "bluetooth habilitado",
+    "estado de conexión",
+    "actualizar información"
   ];
-  bool _progress = false;
-  String _msjprogress = "";
-  String optionprinttype = "58 mm";
-  List<String> options = ["58 mm", "80 mm"];
-  String selectedCommand = "Default Command";
+  bool _progreso = false;
+  String _msjProgreso = "";
+  String tipoImpresion = "58 mm";
+  List<String> opciones = ["58 mm", "80 mm"];
+  String comandoSeleccionado = "Comando Predeterminado";
 
   @override
   void initState() {
     super.initState();
-    initPlatformState();
+    inicializarEstadoPlataforma();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gong cha'),
-        backgroundColor: Colors.blue,
+        title: const Text('Gong cha',style: const TextStyle(color: Colors.white),),
+        backgroundColor: Colors.pink,
         actions: [
           PopupMenuButton(
             elevation: 3.2,
             onCanceled: () {
-              print('You have not chosen anything');
+              // ignore: avoid_print
+              print('No has seleccionado nada');
             },
-            tooltip: 'Menu',
-            onSelected: (Object select) async {
-              // ... (unchanged)
+            tooltip: 'Menú',
+            onSelected: (Object seleccion) async {
+              // ... (sin cambios)
             },
             itemBuilder: (BuildContext context) {
-              return _options.map((String option) {
+              return _opciones.map((String opcion) {
                 return PopupMenuItem(
-                  value: option,
-                  child: Text(option),
+                  value: opcion,
+                  child: Text(opcion),
                 );
               }).toList();
             },
@@ -98,24 +103,24 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Info: $_info\n ',
-                  style: Theme.of(context).textTheme.headline6),
+              Text('Información: $_info\n ',
+                  style: Theme.of(context).textTheme.titleLarge),
               Text(_msj),
               Row(
                 children: [
-                  const Text("Type print", style: TextStyle(fontSize: 16)),
+                  const Text("Tipo de impresión", style: TextStyle(fontSize: 16)),
                   const SizedBox(width: 10),
                   DropdownButton<String>(
-                    value: optionprinttype,
-                    items: options.map((String option) {
+                    value: tipoImpresion,
+                    items: opciones.map((String opcion) {
                       return DropdownMenuItem<String>(
-                        value: option,
-                        child: Text(option),
+                        value: opcion,
+                        child: Text(opcion),
                       );
                     }).toList(),
-                    onChanged: (String? newValue) {
+                    onChanged: (String? nuevoValor) {
                       setState(() {
-                        optionprinttype = newValue!;
+                        tipoImpresion = nuevoValor!;
                       });
                     },
                   ),
@@ -126,15 +131,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      getBluetoots();
+                      obtenerDispositivosBluetooth();
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue,
+                      backgroundColor: Colors.pink,
                     ),
                     child: Row(
                       children: [
                         Visibility(
-                          visible: _progress,
+                          visible: _progreso,
                           child: const SizedBox(
                             width: 25,
                             height: 25,
@@ -145,31 +150,31 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 5),
-                        Text(_progress ? _msjprogress : "Search"),
+                        Text(_progreso ? _msjProgreso : "Buscar",style: const TextStyle(color: Colors.white),),
                       ],
                     ),
                   ),
                   ElevatedButton(
-                    onPressed: connected ? disconnect : null,
+                    onPressed: conectado ? desconectar : null,
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue,
+                      backgroundColor: Colors.pink,
                     ),
-                    child: const Text("Disconnect"),
+                    child: const Text("Desconectar",style: const TextStyle(color: Colors.white),),
                   ),
                   ElevatedButton(
                     onPressed:
-                        connected ? () => navigateToPrintScreen(context) : null,
+                        conectado ? () => navegarAPantallaImpresion(context) : null,
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue,
+                      backgroundColor: Colors.pink,
                     ),
-                    child: const Text("Test"),
+                    child: const Text("Ir a Comandas",style: const TextStyle(color: Colors.white),),
                   ),
                 ],
               ),
               Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
                   color: Colors.grey.withOpacity(0.3),
                 ),
                 child: ListView.builder(
@@ -180,12 +185,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: ListTile(
                         onTap: () {
                           String mac = items[index].macAdress;
-                          connect(mac);
+                          conectar(mac);
                         },
-                        title: Text('Name: ${items[index].name}',
-                            style: TextStyle(fontSize: 18)),
-                        subtitle: Text("macAddress: ${items[index].macAdress}",
-                            style: TextStyle(fontSize: 14)),
+                        title: Text('Nombre: ${items[index].name}',
+                            style: const TextStyle(fontSize: 18)),
+                        subtitle: Text("Dirección MAC: ${items[index].macAdress}",
+                            style: const TextStyle(fontSize: 14)),
                       ),
                     );
                   },
@@ -200,119 +205,127 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> initPlatformState() async {
+  Future<void> inicializarEstadoPlataforma() async {
     try {
-      String platformVersion = await PrintBluetoothThermal.platformVersion;
-      print("platform version: $platformVersion");
-      int porcentbatery = await PrintBluetoothThermal.batteryLevel;
+      String versionPlataforma = await PrintBluetoothThermal.platformVersion;
+      // ignore: avoid_print
+      print("versión de la plataforma: $versionPlataforma");
+      int porcentajeBateria = await PrintBluetoothThermal.batteryLevel;
 
       if (!mounted) return;
 
-      final bool result = await PrintBluetoothThermal.bluetoothEnabled;
-      print("bluetooth enabled: $result");
-      if (result) {
-        _msj = "Bluetooth enabled, please search and connect";
+      final bool resultado = await PrintBluetoothThermal.bluetoothEnabled;
+      // ignore: avoid_print
+      print("bluetooth habilitado: $resultado");
+      if (resultado) {
+        _msj = "Bluetooth habilitado, por favor busca y conecta";
       } else {
-        _msj = "Bluetooth not enabled";
+        _msj = "Bluetooth no habilitado";
       }
 
       setState(() {
-        _info = "$platformVersion ($porcentbatery% battery)";
+        _info = "$versionPlataforma ($porcentajeBateria% batería)";
       });
     } on PlatformException {
-      _info = 'Failed to get platform version.';
+      _info = 'Error al obtener la versión de la plataforma.';
     }
   }
 
-  Future<void> getBluetoots() async {
+  Future<void> obtenerDispositivosBluetooth() async {
     setState(() {
-      _progress = true;
-      _msjprogress = "Wait";
+      _progreso = true;
+      _msjProgreso = "Espera";
       items = [];
     });
-    final List<BluetoothInfo> listResult =
+    final List<BluetoothInfo> listaResultados =
         await PrintBluetoothThermal.pairedBluetooths;
 
     setState(() {
-      _progress = false;
+      _progreso = false;
     });
 
-    if (listResult.isEmpty) {
+    if (listaResultados.isEmpty) {
       _msj =
-          "There are no Bluetooth devices linked. Go to settings and link the printer.";
+          "No hay dispositivos Bluetooth vinculados. Ve a configuración y vincula la impresora.";
     } else {
-      _msj = "Touch an item in the list to connect";
+      _msj = "Toca un elemento en la lista para conectar";
     }
 
     setState(() {
-      items = listResult;
+      items = listaResultados;
     });
   }
 
-  Future<void> connect(String mac) async {
+  // ignore: duplicate_ignore
+  Future<void> conectar(String mac) async {
     setState(() {
-      _progress = true;
-      _msjprogress = "Connecting...";
-      connected = false;
+      _progreso = true;
+      _msjProgreso = "Conectando...";
+      conectado = false;
     });
-    final bool result =
+    final bool resultado =
         await PrintBluetoothThermal.connect(macPrinterAddress: mac);
-    print("state connected $result");
-    if (result) connected = true;
+    // ignore: avoid_print
+    print("estado de conexión $resultado");
+    if (resultado) conectado = true;
     setState(() {
-      _progress = false;
+      _progreso = false;
     });
   }
 
-  Future<void> disconnect() async {
-    final bool status = await PrintBluetoothThermal.disconnect;
+  Future<void> desconectar() async {
+    final bool estado = await PrintBluetoothThermal.disconnect;
     setState(() {
-      connected = false;
+      conectado = false;
     });
-    print("status disconnect $status");
+    print("estado de desconexión $estado");
   }
 
-  void navigateToPrintScreen(BuildContext context) {
+  void navegarAPantallaImpresion(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const PrintScreen()),
+      MaterialPageRoute(builder: (context) => const PantallaImpresion()),
     );
   }
 }
 
-class PrintScreen extends StatelessWidget {
-  const PrintScreen({Key? key}) : super(key: key);
+class PantallaImpresion extends StatelessWidget {
+  const PantallaImpresion({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyComandaPage(),
+      home: MiPantallaComanda(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class MyComandaPage extends StatefulWidget {
-  const MyComandaPage({super.key});
+class MiPantallaComanda extends StatefulWidget {
+  const MiPantallaComanda({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
-  _MyComandaPageState createState() => _MyComandaPageState();
+  _MiPantallaComandaState createState() => _MiPantallaComandaState();
 }
 
-class _MyComandaPageState extends State<MyComandaPage> {
+class _MiPantallaComandaState extends State<MiPantallaComanda> {
   Map<String, List<Map<String, String>>> categorias = {
     "TAMAÑO DE LA BEBIDA": [
-      {"id": "1106986483", "nombre": "Articulo 1.1"},
-      {"id": "1234567890", "nombre": "Articulo 1.2"}
+      {"id": "1106986483", "nombre": "Artículo 1.1"},
+      {"id": "1234567890", "nombre": "Artículo 1.2"}
     ],
     "TOPPING": [
-      {"id": "9876543210", "nombre": "Articulo 2.1"},
-      {"id": "5678901234", "nombre": "Articulo 2.2"}
+      {"id": "9876543210", "nombre": "Artículo 2.1"},
+      {"id": "5678901234", "nombre": "Artículo 2.2"}
     ],
     "LECHE": [
-      {"id": "1122334455", "nombre": "Articulo 3.1"},
-      {"id": "6677889900", "nombre": "Articulo 3.2"}
+      {"id": "1122334455", "nombre": "Artículo 3.1"},
+      {"id": "6677889900", "nombre": "Artículo 3.2"}
+    ],
+    "BEBIDA": [
+      {"id": "1122334455", "nombre": "Artículo 4.1"},
+      {"id": "6677889900", "nombre": "Artículo 4.2"}
     ],
   };
 
@@ -405,9 +418,9 @@ class _MyComandaPageState extends State<MyComandaPage> {
                       ),
                     ),
                     onTap: () {
-                      _toggleSelection(articulo);
+                      _alternarSeleccion(articulo);
                     },
-                    tileColor: _isSelected(articulo)
+                    tileColor: _estaSeleccionado(articulo)
                         ? Colors.pink.withOpacity(0.3)
                         : null,
                   ),
@@ -423,7 +436,7 @@ class _MyComandaPageState extends State<MyComandaPage> {
               backgroundColor: Colors.black,
             ),
             child: const Text(
-              'Imprimir Seleccionados',
+              'Imprimir Comanda',
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -432,42 +445,43 @@ class _MyComandaPageState extends State<MyComandaPage> {
     );
   }
 
-  Future<void> printTest(
+  Future<void> imprimirPrueba(
       List<Map<String, String>> articulosSeleccionados) async {
-    bool connectionStatus = await PrintBluetoothThermal.connectionStatus;
-    if (connectionStatus) {
-      List<int> ticket = await testTicket(articulosSeleccionados);
-      final result = await PrintBluetoothThermal.writeBytes(ticket);
-      print("Print test result: $result");
+    bool estadoConexion = await PrintBluetoothThermal.connectionStatus;
+    if (estadoConexion) {
+      List<int> ticket = await pruebaTicket(articulosSeleccionados);
+      final resultado = await PrintBluetoothThermal.writeBytes(ticket);
+      print("Resultado de la prueba de impresión: $resultado");
     } else {
       // Manejar el caso cuando no está conectado
       print(
-          "La impresora no está conectada. Reconectar o mostrar mensaje de error.");
+          "La impresora no está conectada. Vuelve a conectar o muestra un mensaje de error.");
     }
   }
 
-  Future<List<int>> testTicket(
+  Future<List<int>> pruebaTicket(
       List<Map<String, String>> articulosSeleccionados) async {
     List<int> bytes = [];
 
     // Usar perfil predeterminado
-    final profile = await CapabilityProfile.load();
-    var optionprinttype;
-    final generator = Generator(
-      optionprinttype == "58 mm" ? PaperSize.mm58 : PaperSize.mm80,
-      profile,
+    final perfil = await CapabilityProfile.load();
+    // ignore: prefer_typing_uninitialized_variables
+    var tipoImpresion;
+    final generador = Generator(
+      tipoImpresion == "58 mm" ? PaperSize.mm58 : PaperSize.mm80,
+      perfil,
     );
 
-    bytes += generator.reset();
+    bytes += generador.reset();
 
     // Usar `ESC *`
-    bytes += generator.text('COMANDA GONG CHA',
+    bytes += generador.text('COMANDA GONG CHA LIVERPOOL MAZATLAN',
         styles: const PosStyles(
           align: PosAlign.center,
           fontType: PosFontType.fontA,
         ));
-    bytes += generator.feed(2);
-    bytes += generator.text('Artículos Seleccionados:',
+    bytes += generador.feed(2);
+    bytes += generador.text('Artículos Seleccionados:',
         styles: const PosStyles(bold: true));
 
     for (var articulo in articulosSeleccionados) {
@@ -475,26 +489,26 @@ class _MyComandaPageState extends State<MyComandaPage> {
       final String id = articulo["id"].toString();
 
       // Imprimir detalles del artículo
-      bytes += generator.text('${articulo["nombre"]} ');
+      bytes += generador.text('${articulo["nombre"]} ');
       //  print(detalleArticulo);
 
-      //QR code
-      //bytes += generator.qrcode(id);
+      //Código QR
+      //bytes += generador.qrcode(id);
 
-      // BarCode 
-      bytes += generator.barcode(Barcode.itf(id.split('')));
+      // Código de barras 
+      bytes += generador.barcode(Barcode.itf(id.split('')));
 
       // Agregar un salto de línea para separar cada artículo
       bytes.add(10);
     }
 
-    bytes += generator.feed(2);
-    bytes += generator.cut();
+    bytes += generador.feed(2);
+    bytes += generador.cut();
 
     return bytes;
   }
 
-  void _toggleSelection(Map<String, String> articulo) {
+  void _alternarSeleccion(Map<String, String> articulo) {
     setState(() {
       for (var categoria in categorias.keys) {
         if (categorias[categoria]?.contains(articulo) ?? false) {
@@ -508,7 +522,7 @@ class _MyComandaPageState extends State<MyComandaPage> {
     });
   }
 
-  bool _isSelected(Map<String, String> articulo) {
+  bool _estaSeleccionado(Map<String, String> articulo) {
     for (var listaSeleccionados in seleccionados.values) {
       if (listaSeleccionados.contains(articulo)) {
         return true;
@@ -529,9 +543,9 @@ class _MyComandaPageState extends State<MyComandaPage> {
       articulosSeleccionados.addAll(listaSeleccionados);
     });
 
-    printTest(articulosSeleccionados);
+    imprimirPrueba(articulosSeleccionados);
 
-    _showSuccessAlert();
+    _mostrarAlertaExito();
 
     setState(() {
       seleccionados.clear();
@@ -539,7 +553,7 @@ class _MyComandaPageState extends State<MyComandaPage> {
     });
   }
 
-  void _showSuccessAlert() {
+  void _mostrarAlertaExito() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
