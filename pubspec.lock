@@ -9,14 +9,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.10"
-  args:
-    dependency: transitive
-    description:
-      name: args
-      sha256: eef6c46b622e0494a36c5a12d10d77fb4e855501a91c1b9ef9339326e58f0596
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.2"
   async:
     dependency: transitive
     description:
@@ -25,22 +17,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  barcode:
-    dependency: transitive
-    description:
-      name: barcode
-      sha256: "91b143666f7bb13636f716b6d4e412e372ab15ff7969799af8c9e30a382e9385"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.6"
-  barcode_image:
-    dependency: "direct main"
-    description:
-      name: barcode_image
-      sha256: b93f6ec7fa3d29373cff404ea99fb2afe895d2b4f36704e563f861e7a0818483
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.3"
   boolean_selector:
     dependency: transitive
     description:
@@ -227,14 +203,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.9"
-  qr:
-    dependency: transitive
-    description:
-      name: qr
-      sha256: "64957a3930367bf97cc211a5af99551d630f2f4625e38af10edd6b19131b64b3"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.1"
   sky_engine:
     dependency: transitive
     description: flutter

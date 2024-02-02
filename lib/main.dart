@@ -1,7 +1,6 @@
-// ignore_for_file: avoid_print, duplicate_ignore
+// ignore_for_file: avoid_print
 
 import 'dart:async';
-// ignore: unused_import
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -72,13 +71,15 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gong cha',style: const TextStyle(color: Colors.white),),
+        title: const Text(
+          'Gong cha',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.pink,
         actions: [
           PopupMenuButton(
             elevation: 3.2,
             onCanceled: () {
-              // ignore: avoid_print
               print('No has seleccionado nada');
             },
             tooltip: 'Menú',
@@ -108,7 +109,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
               Text(_msj),
               Row(
                 children: [
-                  const Text("Tipo de impresión", style: TextStyle(fontSize: 16)),
+                  const Text("Tipo de impresión",
+                      style: TextStyle(fontSize: 16)),
                   const SizedBox(width: 10),
                   DropdownButton<String>(
                     value: tipoImpresion,
@@ -150,7 +152,10 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                           ),
                         ),
                         const SizedBox(width: 5),
-                        Text(_progreso ? _msjProgreso : "Buscar",style: const TextStyle(color: Colors.white),),
+                        Text(
+                          _progreso ? _msjProgreso : "Buscar",
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       ],
                     ),
                   ),
@@ -159,15 +164,22 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.pink,
                     ),
-                    child: const Text("Desconectar",style: const TextStyle(color: Colors.white),),
+                    child: const Text(
+                      "Desconectar",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                   ElevatedButton(
-                    onPressed:
-                        conectado ? () => navegarAPantallaImpresion(context) : null,
+                    onPressed: conectado
+                        ? () => navegarAPantallaImpresion(context)
+                        : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.pink,
                     ),
-                    child: const Text("Ir a Comandas",style: const TextStyle(color: Colors.white),),
+                    child: const Text(
+                      "Ir a Comandas",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -189,7 +201,8 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
                         },
                         title: Text('Nombre: ${items[index].name}',
                             style: const TextStyle(fontSize: 18)),
-                        subtitle: Text("Dirección MAC: ${items[index].macAdress}",
+                        subtitle: Text(
+                            "Dirección MAC: ${items[index].macAdress}",
                             style: const TextStyle(fontSize: 14)),
                       ),
                     );
@@ -208,14 +221,14 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   Future<void> inicializarEstadoPlataforma() async {
     try {
       String versionPlataforma = await PrintBluetoothThermal.platformVersion;
-      // ignore: avoid_print
+
       print("versión de la plataforma: $versionPlataforma");
       int porcentajeBateria = await PrintBluetoothThermal.batteryLevel;
 
       if (!mounted) return;
 
       final bool resultado = await PrintBluetoothThermal.bluetoothEnabled;
-      // ignore: avoid_print
+
       print("bluetooth habilitado: $resultado");
       if (resultado) {
         _msj = "Bluetooth habilitado, por favor busca y conecta";
@@ -265,7 +278,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     });
     final bool resultado =
         await PrintBluetoothThermal.connect(macPrinterAddress: mac);
-    // ignore: avoid_print
+
     print("estado de conexión $resultado");
     if (resultado) conectado = true;
     setState(() {
@@ -278,6 +291,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     setState(() {
       conectado = false;
     });
+
     print("estado de desconexión $estado");
   }
 
@@ -311,21 +325,150 @@ class MiPantallaComanda extends StatefulWidget {
 
 class _MiPantallaComandaState extends State<MiPantallaComanda> {
   Map<String, List<Map<String, String>>> categorias = {
-    "TAMAÑO DE LA BEBIDA": [
-      {"id": "1106986483", "nombre": "Artículo 1.1"},
-      {"id": "1234567890", "nombre": "Artículo 1.2"}
+    "SERIE MILK": [
+      {"id": "1107799377", "nombre": "GREEN MILK TEA MED 70.00"},
+      {"id": "1107799482", "nombre": "GREEN MILK TEA GRAND 80.00"},
+      {"id": "1113094954", "nombre": "GREEN MILK TEA CAL MED 70.00"},
+      {"id": "1107799385", "nombre": "BLACK MILK TEA MED 70.00"},
+      {"id": "1107799491", "nombre": "BLACK MILK TEA GRAND 80.00"},
+      {"id": "1113094962", "nombre": "BLACK MILK TEA MED CAL 70.00"},
+      {"id": "1107799369", "nombre": "TAPIOCA BLACK MILK TEA MED 88.00"},
+      {"id": "1107799474", "nombre": "TAPIOCA BLACK MILK TEA GRAND 100.00"},
+      {"id": "1113094474", "nombre": "TAPIOCA BLACK MILK TEA MED CAL 79.00"},
+      {"id": "1107799393", "nombre": "CARAMEL BLACK MILK TEA MED 91.00"},
+      {"id": "1107799504", "nombre": "CARAMEL BLACK MILK TEA GRAND 101.00"},
+      {"id": "1113094971", "nombre": "CARAMEL BLACK TEA MED CAL 91.00"},
+      {"id": "1107799407", "nombre": "CHOCOLATE MILK MED 96.00"},
+      {"id": "1107799512", "nombre": "CHOCOLATE MILK GRAND 108.00"},
+      {"id": "1113094989", "nombre": "CHOCOLATE MILK MED CAL 96.00"},
+      {"id": "1107799415", "nombre": "TARO MILK MED 96.00"},
+      {"id": "1107799521", "nombre": "TARO MILK GRAND 108.00"},
+      {"id": "1113094997", "nombre": "TARO MILK MED CAL 96.00"},
+      {"id": "1107799423", "nombre": "MATCHA MILK MED 91.00"},
+      {"id": "1107799539", "nombre": "MATCHA MILK GRAND 103.00"},
+      {"id": "1113095004", "nombre": "MATCHA MILK MED CAL 91.00"},
+      {"id": "1107799431", "nombre": "CHAI MILK TEA MED 96.00"},
+      {"id": "1107799547", "nombre": "CHAI MILK TEA GRAND 108.00"},
+      {"id": "1113095012", "nombre": "CHAI MILK TEA MED CAL 96.00"},
+      {"id": "1107799440", "nombre": "FRESA GREEN MILK TEA MED 91.00"},
+      {"id": "1107799555", "nombre": "FRESA GREEN MILK TEA GRAND 101.00"},
+      {"id": "1113095098", "nombre": "FRESA GREEN MILK TEA MED CAL 91.00"},
+      {"id": "1107799458", "nombre": "FRESA BLACK MILK TEA MED 91.00"},
+      {"id": "1107799563", "nombre": "FRESA BLACK MILK TEA GRAND 101.00"},
+      {"id": "1113095101", "nombre": "FRESA BLACK MILK TEA MED CAL 91.00"},
+      {"id": "1107799466", "nombre": "YAKULT GREEN MED 91.00"},
+      {"id": "1107799571", "nombre": "YAKULT GREEN GRAND 101.00"}
     ],
-    "TOPPING": [
-      {"id": "9876543210", "nombre": "Artículo 2.1"},
-      {"id": "5678901234", "nombre": "Artículo 2.2"}
+    "SERIE SMOOTHIE": [
+      {"id": "1107799768", "nombre": "TARO SMOOTHIE MED 101.00"},
+      {"id": "1107800260", "nombre": "TARO SMOOTHIE GRAND 113.00"},
+      {"id": "1107799776", "nombre": "MANGO SMOOTHIE MED 110.00"},
+      {"id": "1107800278", "nombre": "MANGO SMOOTHIE GRAND 122.00"},
+      {"id": "1107799784", "nombre": "CHOCOLATE SMOOTHIE MED 101.00"},
+      {"id": "1107800286", "nombre": "CHOCOLATE SMOOTHIE GRAND 113.00"},
+      {"id": "1107799792", "nombre": "CHAI SMOOTHIE MED 100.00"},
+      {"id": "1107800294", "nombre": "CHAI SMOOTHIE GRAND 112.00"},
+      {"id": "1107799806", "nombre": "MATCHA SMOOTHIE MED 101.00"},
+      {"id": "1107800308", "nombre": "MATCHA SMOOTHIE GRAND 113.00"},
+      {"id": "1107799814", "nombre": "FRESA SMOOTHIE MED 100.00"},
+      {"id": "1107800316", "nombre": "FRESA SMOOTHIE GRAND 112.00"},
+      {"id": "1107800120", "nombre": "CHOCO FRESA SMOOTHIE MED 110.00"},
+      {"id": "1107800821", "nombre": "CHOCO FRESA SMOOTHIE GRAND 122.00"},
+      {"id": "1107800847", "nombre": "DURAZNO BLACK TEA SMOOTHIE MED 88.00"},
+      {"id": "1107800871", "nombre": "DURAZNO BLACK TEA SMOOHIE GRAD 100.00"},
+      {"id": "1107803421", "nombre": "MARACUYA SMOOTHIE CON COCO JEL 91.00"},
+      {"id": "1107800855", "nombre": "MARACUYA SMOOTHIE CON COCO JEL 103.00"},
+      {"id": "1107800898", "nombre": "LICHI SMOOTHIE GRAND 100.00"},
+      {"id": "1107800863", "nombre": "LICHI SMOOTHIE MED 88.00"},
+      {"id": "1107801860", "nombre": "MARACUYA GREEN TEA SMOOTHIE ME 81.00"},
+      {"id": "1107801878", "nombre": "MARACUYA GREEN TEA SMOOTHIE GR 93.00"},
+      {"id": "1107801886", "nombre": "MANGO GREEN TEA SMOOTHIE MED 110.00"},
+      {"id": "1107801894", "nombre": "MANGO GREEN TEA SMOOTHIE GRAN 122.00"},
+      {"id": "1105350798", "nombre": "CHILLI SMOOTHIE"}
     ],
-    "LECHE": [
-      {"id": "1122334455", "nombre": "Artículo 3.1"},
-      {"id": "6677889900", "nombre": "Artículo 3.2"}
+    "SERIE CREATIVA/BROWN": [
+      {"id": "1107799717", "nombre": "MARACUYA GREEN TEA GRAND 93.00"},
+      {"id": "1107799628", "nombre": "MARACUYÀ GREEN TEA MED 81.00"},
+      {"id": "1113095233", "nombre": "MARACUYÁ GREEN TEA MED CAL 81.00"},
+      {"id": "1107799679", "nombre": "MARACOCO GREEN TEA CON PERLAS C 107.00"},
+      {"id": "1107799580", "nombre": "MARACOCO GREEN TEA CON PERLAS 95.00"},
+      {"id": "1107799709", "nombre": "LICHI GREEN TEA GRAND 93.00"},
+      {"id": "1107799610", "nombre": "LICHI GREEN TEA MED  81.00"},
+      {"id": "1113095225", "nombre": "LICHI GREEN TEA MED CAL 81.00"},
+      {"id": "1107799636", "nombre": "FRESA GREEN TEA MED 86.00"},
+      {"id": "1107799725", "nombre": "FRESA GREEN TEA GRAND 98.00"},
+      {"id": "1113095241", "nombre": "FRESA GREEN TEA MED CAL 86.00"},
+      {"id": "1107799733", "nombre": "FRESA BLACK TEA GRAND 98.00"},
+      {"id": "1107799644", "nombre": "FRESA BLACK TEA MED 86.00"},
+      {"id": "1113095250", "nombre": "FRESA BLACK TEA MED CAL 86.00"},
+      {"id": "1107799601", "nombre": "MANGO GREEN TEA MED 86.00"},
+      {"id": "1107799695", "nombre": "MANGO GREEN TEA GRAND 82.00"},
+      {"id": "1113095110", "nombre": "MANGO GREEN TEA MED CAL 98.00"},
+      {"id": "1107799652", "nombre": "DURAZNO GREEN TEA MED 81.00"},
+      {"id": "1107799741", "nombre": "DURAZNO GREEN TEA GRAND 93.00"},
+      {"id": "1113094911", "nombre": "DURAZNO GREEN TEA MED CAL 81.00"},
+      {"id": "1107801258", "nombre": "BROWN SUGAR PEARL LATTE GRAND  103.00"},
+      {"id": "1107801223", "nombre": "BROWN SUGAR PEARL LATTE MED  91.00"},
+      {"id": "1107801240", "nombre": "BROWN SUGAR MATCHA MILK TEA GR 104.00"},
+      {"id": "1107800910", "nombre": "BROWN SUGAR MATCHA MILK TEA ME 94.00"},
+      {"id": "1107801231", "nombre": "BROWN SUGAR BLACK MILK TEA GRAN 101.00"},
+      {"id": "1107800901", "nombre": "BROWN SUGAR BLACK MILK TEA MED 91.00"},
+      {"id": "1113094920", "nombre": "BROWN SUGAR BLACK MILK TEA MED 90.00"}
     ],
-    "BEBIDA": [
-      {"id": "1122334455", "nombre": "Artículo 4.1"},
-      {"id": "6677889900", "nombre": "Artículo 4.2"}
+    "SERIE TE/CAFE": [
+      {"id": "1107799342", "nombre": "GREEN TEA GRAND 75.00"},
+      {"id": "1107799105", "nombre": "GREEN TEA MED 65.00"},
+      {"id": "1107799351", "nombre": "BLACK TEA GRAND 75.00"},
+      {"id": "1107799113", "nombre": "BLACK TEA MED 65.00"},
+      {"id": "1107799326", "nombre": "GREEN TEA CALIENTE MED 65.00"},
+      {"id": "1107799334", "nombre": "BLACK TEA CALIENTE MED 65.00"},
+      {"id": "1128339988", "nombre": "MILK COFFEE MED 76.00"},
+      {"id": "1128340030", "nombre": "MILK COFFEE GDE 86.00"},
+      {"id": "1128339996", "nombre": "AMERICANO MED 65.00"},
+      {"id": "1128340048", "nombre": "AMERICANO GDE 75.00"},
+      {"id": "1128340005", "nombre": "MOCHA MED 88.00"},
+      {"id": "1128340056", "nombre": "MOCHA GDE 98.00"},
+      {"id": "1128340137", "nombre": "DOLCE MILK MED 96.00"},
+      {"id": "1128340111", "nombre": "DOLCE SMOOTHIE GDE 104.00"},
+      {"id": "1128340129", "nombre": "DOLCE SMOOTHIE MED 92.00"}
+    ],
+    "TEMPORADA": [
+      {"id": "1142067206", "nombre": "LONDON FOG EARL GREY CALIENTE MED 78.00"},
+      {"id": "1142067214", "nombre": "LONDON FOG EARL GREY MED 78.00"},
+      {"id": "1142067826", "nombre": "LONDON FOG EARL GREY GRAD 90.00"},
+      {
+        "id": "1146375266",
+        "nombre": "Gingerbread Milk Tea with Milk Foam and Pearls (Hot) 110.00"
+      },
+      {
+        "id": "1146375274",
+        "nombre": "Gingerbread Milk Tea en botella navideña 150.00"
+      }
+    ],
+    "TOPPINGS": [
+      {"id": "1107801266", "nombre": "LECHE DESLACTOSADA 9.00"},
+      {"id": "1131685668", "nombre": "LECHE ENTERA 0.01"},
+      {"id": "1131685676", "nombre": "LECHE LIGHT 0.01"},
+      {"id": "1107801274", "nombre": "LECHE DESLACTOSADA LIGHT 9.00"},
+      {"id": "1107801282", "nombre": "LECHE DE COCO 10.00"},
+      {"id": "1107801291", "nombre": "LECHE DE ALMENDRAS 10.00"},
+      {"id": "1107801304", "nombre": "OREOS MOLIDAS 10.00"},
+      {"id": "1107801312", "nombre": "TAPIOCA / PERLAS 12.00"},
+      {"id": "1107801321", "nombre": "COCO JELLY 15.00"},
+      {"id": "1107801339", "nombre": "MILK FOAM 13.00"},
+      {"id": "1107801347", "nombre": "TAPIOCA FRESA 18.00"},
+      {"id": "1107801355", "nombre": "TAPIOCA BLANCA 19.00"},
+      {"id": "1107801371", "nombre": "CREME BRULEE 15.00"}
+    ],
+    "SOUVENIRS": [
+      {"id": "1130205697", "nombre": "AGENDA GONGCHA 250.00"},
+      {"id": "1103817672", "nombre": "SET DE POPOTES 130.00"},
+      {"id": "1109302216", "nombre": "LLAVERO GONGCHA 3D 100.00"},
+      {"id": "1128821411", "nombre": "TERMO ACERO INOXIDABLE 380.00"},
+      {"id": "1103819130", "nombre": "TERMO PLASTICO 160.00"},
+      {"id": "1131856012", "nombre": "MAIZ PUFFED 25.00"},
+      {"id": "1131856004", "nombre": "OBLEAS GOLDEN MILK / PINK CHAI 48.00"},
+      {"id": "1131855997", "nombre": "OBLEAS MATCHA / TARO 48.00"}
     ],
   };
 
@@ -495,7 +638,7 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       //Código QR
       //bytes += generador.qrcode(id);
 
-      // Código de barras 
+      // Código de barras
       bytes += generador.barcode(Barcode.itf(id.split('')));
 
       // Agregar un salto de línea para separar cada artículo
@@ -532,13 +675,11 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
   }
 
   void _imprimirSeleccionados() {
-    // ignore: avoid_print
     print('Artículos Seleccionados:');
 
     List<Map<String, String>> articulosSeleccionados = [];
 
     seleccionados.forEach((categoria, listaSeleccionados) {
-      // ignore: avoid_print
       print('$categoria: $listaSeleccionados');
       articulosSeleccionados.addAll(listaSeleccionados);
     });
