@@ -502,6 +502,8 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
   List<Map<String, String>> articulosMostrados = [];
   Map<String, List<Map<String, String>>> seleccionados = {};
 
+  List<Map<String, String>> carrito = []; // Carrito de compras
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -598,9 +600,50 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
               },
             ),
           ),
+          // Carrito de compras
+          Container(
+            padding: const EdgeInsets.all(10),
+            child: const Text(
+              'Carrito de Compras',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: ListView.builder(
+              itemCount: carrito.length,
+              itemBuilder: (context, index) {
+                final articulo = carrito[index];
+                return ListTile(
+                  title: Text('${articulo["nombre"]}'),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        carrito.removeAt(index);
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+
           ElevatedButton(
             onPressed: () {
-              _imprimirSeleccionados();
+              _vaciarCarrito();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text(
+              'Vaciar Carrito',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _imprimirCarrito();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black,
@@ -613,6 +656,49 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
         ],
       ),
     );
+  }
+
+  void _alternarSeleccion(Map<String, String> articulo) {
+    setState(() {
+      for (var categoria in categorias.keys) {
+        if (categorias[categoria]?.contains(articulo) ?? false) {
+          if (seleccionados[categoria]?.contains(articulo) ?? false) {
+            carrito.add(articulo); // Agregar al carrito si ya está seleccionado
+          } else {
+            seleccionados[categoria]?.add(articulo);
+            carrito.add(articulo); // Agregar al carrito si no está seleccionado
+          }
+        }
+      }
+    });
+  }
+
+  bool _estaSeleccionado(Map<String, String> articulo) {
+    for (var listaSeleccionados in seleccionados.values) {
+      if (listaSeleccionados.contains(articulo)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _imprimirCarrito() {
+    print('Artículos en el carrito:');
+
+    List<Map<String, String>> articulosCarrito = [];
+
+    carrito.forEach((articulo) {
+      print('$articulo');
+      articulosCarrito.add(articulo);
+    });
+
+    imprimirPrueba(articulosCarrito);
+
+    setState(() {
+      seleccionados.clear();
+      articulosMostrados.clear();
+      carrito.clear(); // Vaciar el carrito después de imprimir
+    });
   }
 
   Future<void> imprimirPrueba(
@@ -645,7 +731,7 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
     bytes += generador.reset();
 
     // Usar `ESC *`
-    bytes += generador.text('COMANDA GONG CHA LIVERPOOL MAZATLAN',
+    bytes += generador.text('GONG CHA LIVERPOOL MAZATLAN',
         styles: const PosStyles(
           align: PosAlign.center,
           fontType: PosFontType.fontA,
@@ -678,49 +764,6 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
     return bytes;
   }
 
-  void _alternarSeleccion(Map<String, String> articulo) {
-    setState(() {
-      for (var categoria in categorias.keys) {
-        if (categorias[categoria]?.contains(articulo) ?? false) {
-          if (seleccionados[categoria]?.contains(articulo) ?? false) {
-            seleccionados[categoria]?.remove(articulo);
-          } else {
-            seleccionados[categoria]?.add(articulo);
-          }
-        }
-      }
-    });
-  }
-
-  bool _estaSeleccionado(Map<String, String> articulo) {
-    for (var listaSeleccionados in seleccionados.values) {
-      if (listaSeleccionados.contains(articulo)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  void _imprimirSeleccionados() {
-    print('Artículos Seleccionados:');
-
-    List<Map<String, String>> articulosSeleccionados = [];
-
-    seleccionados.forEach((categoria, listaSeleccionados) {
-      print('$categoria: $listaSeleccionados');
-      articulosSeleccionados.addAll(listaSeleccionados);
-    });
-
-    imprimirPrueba(articulosSeleccionados);
-
-    _mostrarAlertaExito();
-
-    setState(() {
-      seleccionados.clear();
-      articulosMostrados.clear();
-    });
-  }
-
   void _mostrarAlertaExito() {
     showDialog(
       context: context,
@@ -740,5 +783,24 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
         );
       },
     );
+  }
+
+  // Métodos para gestionar el carrito de compras
+  void _agregarAlCarrito(Map<String, String> articulo) {
+    setState(() {
+      carrito.add(articulo);
+    });
+  }
+
+  void _removerDelCarrito(Map<String, String> articulo) {
+    setState(() {
+      carrito.remove(articulo);
+    });
+  }
+
+  void _vaciarCarrito() {
+    setState(() {
+      carrito.clear();
+    });
   }
 }
