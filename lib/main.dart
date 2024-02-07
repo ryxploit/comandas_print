@@ -402,8 +402,8 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       {"id": "1107799644", "nombre": "FRESA BLACK TEA MED 86.00"},
       {"id": "1113095250", "nombre": "FRESA BLACK TEA MED CAL 86.00"},
       {"id": "1107799601", "nombre": "MANGO GREEN TEA MED 86.00"},
-      {"id": "1107799695", "nombre": "MANGO GREEN TEA GRAND 82.00"},
-      {"id": "1113095110", "nombre": "MANGO GREEN TEA MED CAL 98.00"},
+      {"id": "1107799695", "nombre": "MANGO GREEN TEA GRAND 98.00"},
+      {"id": "1113095110", "nombre": "MANGO GREEN TEA MED CAL 86.00"},
       {"id": "1107799652", "nombre": "DURAZNO GREEN TEA MED 81.00"},
       {"id": "1107799741", "nombre": "DURAZNO GREEN TEA GRAND 93.00"},
       {"id": "1113094911", "nombre": "DURAZNO GREEN TEA MED CAL 81.00"},
@@ -441,6 +441,14 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
         "nombre": "Gingerbread Milk Tea with Milk Foam and Pearls (Hot) 110.00"
       },
       {
+        "id": "1149572101",
+        "nombre": "STRAWBERRY ALMOND JELLY MILK TEA MED 95.00"
+      },
+      {
+        "id": "1149572119",
+        "nombre": "STRAWBERRY ALMOND JELLY SMOOTHIE MED 100.00"
+      },
+      {
         "id": "1146375274",
         "nombre": "Gingerbread Milk Tea en botella navideña 150.00"
       }
@@ -456,8 +464,8 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       {"id": "1107801312", "nombre": "TAPIOCA / PERLAS 12.00"},
       {"id": "1107801321", "nombre": "COCO JELLY 15.00"},
       {"id": "1107801339", "nombre": "MILK FOAM 13.00"},
-      {"id": "1107801347", "nombre": "TAPIOCA FRESA 18.00"},
-      {"id": "1107801355", "nombre": "TAPIOCA BLANCA 19.00"},
+      {"id": "1107801347", "nombre": "TAPIOCA BLANCA 18.00"},
+      {"id": "1107801355", "nombre": "TAPIOCA FRESA 19.00"},
       {"id": "1107801371", "nombre": "CREME BRULEE 15.00"}
     ],
     "SOUVENIRS": [
@@ -469,6 +477,25 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       {"id": "1131856012", "nombre": "MAIZ PUFFED 25.00"},
       {"id": "1131856004", "nombre": "OBLEAS GOLDEN MILK / PINK CHAI 48.00"},
       {"id": "1131855997", "nombre": "OBLEAS MATCHA / TARO 48.00"}
+    ],
+    "EMBOTELLADOS": [
+      {"id": "1146476551", "nombre": "AGUA GODDESS ATHENA 500 ML 39.00"},
+    ],
+    "ALIMENTOS": [
+      {"id": "1131936920", "nombre": "BG ROST BEEF 85.00"},
+      {"id": "1131936946", "nombre": "BG PAVO 85.00"},
+      {"id": "1131936954", "nombre": "BG SERRANO 95.00"},
+      {"id": "1131936962", "nombre": "BG PAMPLONA 85.00"},
+      {"id": "1131936971", "nombre": "BG 3 QUESOS 85.00"},
+      {"id": "1131937039", "nombre": "PASTEL DE CHOCOLATE 70.00"},
+      {"id": "1131937047", "nombre": "CHEESSCAKE 65.00"},
+      {"id": "1131886221", "nombre": "OBLEAS MATCHA / TARO 48.00"},
+      {"id": "1131889026", "nombre": "OBLEAS GOLDEN MILK / PINK 48.00"},
+      {"id": "1131936989", "nombre": "BG SELVA NEGRA 95.00"},
+      {"id": "1131936997", "nombre": "PANQUE DE CHOCOLATE 45.00"},
+      {"id": "1131937004", "nombre": "PANQUE DE ELOTE 45.00"},
+      {"id": "1131937012", "nombre": "PANQUE DE COCO 45.00"},
+      {"id": "1131937021", "nombre": "PANQUE DE PLATANO 45.00"},
     ],
   };
 
