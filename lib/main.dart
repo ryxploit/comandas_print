@@ -451,6 +451,45 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       {
         "id": "1146375274",
         "nombre": "Gingerbread Milk Tea en botella navideña 150.00"
+      },
+      {"id": "1148493975", "nombre": "Combo chocolate MED/FRIO 135.00"},
+      {"id": "1148493983", "nombre": "Combo chocolate GDE/FRIO 150.00"},
+      {"id": "1148493991", "nombre": "Combo chocolate MED/CALIENTE 135.00"},
+      {
+        "id": "1148722842",
+        "nombre": "Lychee sweet caramel green tea MED/FRIO 2x1½ 112.00"
+      },
+      {
+        "id": "1148725361",
+        "nombre": "Lychee sweet caramel green tea MED/Caliente 2x1½ 112.00"
+      },
+      {
+        "id": "1148726333",
+        "nombre": "Lychee sweet caramel green tea GDE/FRIO 2x1½ 127.00"
+      },
+      {
+        "id": " 1148726341",
+        "nombre": "Taro Sweet Caramel Milk MED/FRIO 2x1½ 120.00"
+      },
+      {
+        "id": "1148726350",
+        "nombre": " Taro Sweet Caramel Milk MED/Caliente 2x1½ 120.00"
+      },
+      {
+        "id": "1148726368",
+        "nombre": "Taro Sweet Caramel Milk GDE/FRIO 2x1½ 135.00"
+      },
+      {
+        "id": "1148726376",
+        "nombre": "Chai Sweet Caramel Milk MED/FRIO 2x1½ 120.00"
+      },
+      {
+        "id": "1148726384",
+        "nombre": "Chai Sweet Caramel Milk MED/Caliente 2x1½ 120.00"
+      },
+      {
+        "id": "1148726392",
+        "nombre": "Chai Sweet Caramel Milk GDE/FRIO 2x1½ 135.00"
       }
     ],
     "TOPPINGS": [
@@ -476,7 +515,10 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       {"id": "1103819130", "nombre": "TERMO PLASTICO 160.00"},
       {"id": "1131856012", "nombre": "MAIZ PUFFED 25.00"},
       {"id": "1131856004", "nombre": "OBLEAS GOLDEN MILK / PINK CHAI 48.00"},
-      {"id": "1131855997", "nombre": "OBLEAS MATCHA / TARO 48.00"}
+      {"id": "1131855997", "nombre": "OBLEAS MATCHA / TARO 48.00"},
+      {"id": "1149767815", "nombre": "Conejo en la Luna 320.00"},
+      {"id": "1149769851", "nombre": " Boba Gamer 320.00"},
+      {"id": "1149769869", "nombre": "Las aventuras de Tapiokitty 320.00"},
     ],
     "EMBOTELLADOS": [
       {"id": "1146476551", "nombre": "AGUA GODDESS ATHENA 500 ML 39.00"},
