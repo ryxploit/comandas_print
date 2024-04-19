@@ -1,4 +1,4 @@
-package com.example.comanda_gongcha
+package com.ryxploit.comandasGongCha
 
 import io.flutter.embedding.android.FlutterActivity
 
