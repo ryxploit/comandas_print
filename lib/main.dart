@@ -484,25 +484,6 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
               child: Text('Agregar Datos'),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                final articulosSeleccionados = _datos.values
-                    .expand((e) => e)
-                    .where((item) =>
-                        (_seleccionados[item['sku'].toString()] ?? 0) > 0)
-                    .toList();
-                _imprimirComanda(articulosSeleccionados);
-              },
-              child: Text('Imprimir Comanda'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _mostrarConfirmacionBorrado(context);
-              },
-              child: Text('Borrar Base de Datos'),
-            ),
-            SizedBox(height: 20),
             if (_datos.isNotEmpty)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -569,6 +550,36 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
                   );
                 }).toList(),
               ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                final articulosSeleccionados = _datos.values
+                    .expand((e) => e)
+                    .where((item) =>
+                        (_seleccionados[item['sku'].toString()] ?? 0) > 0)
+                    .toList();
+                _imprimirComanda(articulosSeleccionados);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green, // Cambia el color a verde
+              ),
+              child: Text('Imprimir Comanda'),
+            ),
+            SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity, // Ajusta el ancho del SizedBox al máximo
+              child: ElevatedButton(
+                onPressed: () {
+                  _mostrarConfirmacionBorrado(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                      vertical:
+                          10), // Ajusta el padding vertical para hacerlo más pequeño
+                ),
+                child: Text('Borrar Base de Datos'),
+              ),
+            ),
           ],
         ),
       ),
