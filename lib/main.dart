@@ -1,19 +1,18 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart' as path;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-      .then((_) {
-    runApp(const MyApp());
-  });
+  await Supabase.initialize(
+    url: 'https://vouegedqhtzzmnnhgyxu.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZvdWVnZWRxaHR6em1ubmhneXh1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTYzOTk3NzIsImV4cCI6MjAzMTk3NTc3Mn0.8WTVtMsKMJIeYPYluv7ZbiKzt8N6iO4ajJM6pHnIn6I',
+  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -26,10 +25,8 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.pink,
         hintColor: Colors.grey,
         textTheme: const TextTheme(
-          // ignore: deprecated_member_use
-          headline6: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          // ignore: deprecated_member_use
-          bodyText2: TextStyle(fontSize: 16),
+          titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          bodyMedium: TextStyle(fontSize: 16),
         ),
       ),
       debugShowCheckedModeBanner: false,
@@ -46,7 +43,7 @@ class PantallaPrincipal extends StatefulWidget {
 }
 
 class _PantallaPrincipalState extends State<PantallaPrincipal> {
-  late Database _database;
+  final SupabaseClient supabase = Supabase.instance.client;
 
   String _info = "";
   String _msj = '';
@@ -68,31 +65,6 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
   void initState() {
     super.initState();
     inicializarEstadoPlataforma();
-    _initializeDatabase();
-  }
-
-  Future<void> _initializeDatabase() async {
-    try {
-      _database = await openDatabase(
-        path.join(await getDatabasesPath(), 'comanda_database.db'),
-        onCreate: (db, version) async {
-          try {
-            await db.execute(
-              "CREATE TABLE IF NOT EXISTS categorias(id INTEGER PRIMARY KEY, nombre TEXT)",
-            );
-            await db.execute(
-              "CREATE TABLE IF NOT EXISTS articulos(id INTEGER PRIMARY KEY, nombre TEXT, idCategoria INTEGER)",
-            );
-          } catch (e) {
-            print('Error creating tables: $e');
-          }
-        },
-        version: 1,
-      );
-    } catch (e) {
-      print('Error initializing database: $e');
-      throw e;
-    }
   }
 
   @override
@@ -112,7 +84,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             },
             tooltip: 'Menú',
             onSelected: (Object seleccion) async {
-              // ... (sin cambios)
+              // Aquí puede ir la lógica correspondiente
             },
             itemBuilder: (BuildContext context) {
               return _opciones.map((String opcion) {
@@ -133,7 +105,7 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Información: $_info\n ',
-                  style: Theme.of(context).textTheme.headline6),
+                  style: Theme.of(context).textTheme.titleLarge),
               Text(_msj),
               Row(
                 children: [
@@ -268,58 +240,81 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
         _info = "$versionPlataforma ($porcentajeBateria% batería)";
       });
     } on PlatformException {
-      _info = 'Error al obtener la versión de la plataforma.';
+      setState(() {
+        _info = 'Error al obtener la versión de la plataforma.';
+      });
     }
   }
 
   Future<void> obtenerDispositivosBluetooth() async {
-    setState(() {
-      _progreso = true;
-      _msjProgreso = "Espera";
-      items = [];
-    });
-    final List<BluetoothInfo> listaResultados =
-        await PrintBluetoothThermal.pairedBluetooths;
+    try {
+      setState(() {
+        _progreso = true;
+        _msjProgreso = "Espera";
+        items = [];
+      });
+      final List<BluetoothInfo> listaResultados =
+          await PrintBluetoothThermal.pairedBluetooths;
 
-    setState(() {
-      _progreso = false;
-    });
-
-    if (listaResultados.isEmpty) {
-      _msj =
-          "No hay dispositivos Bluetooth vinculados. Ve a configuración y vincula la impresora.";
-    } else {
-      _msj = "Toca un elemento en la lista para conectar";
+      setState(() {
+        _progreso = false;
+        if (listaResultados.isEmpty) {
+          _msj =
+              "No hay dispositivos Bluetooth vinculados. Ve a configuración y vincula la impresora.";
+        } else {
+          _msj = "Toca un elemento en la lista para conectar";
+          items = listaResultados;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _progreso = false;
+        _msj = "Error al obtener dispositivos Bluetooth: $e";
+      });
     }
-
-    setState(() {
-      items = listaResultados;
-    });
   }
 
   Future<void> conectar(String mac) async {
-    setState(() {
-      _progreso = true;
-      _msjProgreso = "Conectando...";
-      conectado = false;
-    });
-    final bool resultado =
-        await PrintBluetoothThermal.connect(macPrinterAddress: mac);
+    try {
+      setState(() {
+        _progreso = true;
+        _msjProgreso = "Conectando...";
+        conectado = false;
+      });
+      final bool resultado =
+          await PrintBluetoothThermal.connect(macPrinterAddress: mac);
 
-    print("estado de conexión $resultado");
-    if (resultado) conectado = true;
-    setState(() {
-      _progreso = false;
-    });
+      setState(() {
+        _progreso = false;
+        conectado = resultado;
+      });
+
+      if (resultado) {
+        print("Conectado exitosamente a $mac");
+      } else {
+        print("Falló la conexión a $mac");
+      }
+    } catch (e) {
+      setState(() {
+        _progreso = false;
+        _msj = "Error al conectar: $e";
+      });
+    }
   }
 
   Future<void> desconectar() async {
-    final bool estado = await PrintBluetoothThermal.disconnect;
-    setState(() {
-      conectado = false;
-    });
+    try {
+      final bool estado = await PrintBluetoothThermal.disconnect;
+      setState(() {
+        conectado = false;
+      });
 
-    print("estado de desconexión $estado");
+      print("estado de desconexión $estado");
+    } catch (e) {
+      setState(() {
+        _msj = "Error al desconectar: $e";
+      });
+    }
   }
 
   void navegarAPantallaImpresion(BuildContext context) {
@@ -338,6 +333,7 @@ class PantallaImpresion extends StatelessWidget {
     return MaterialApp(
       home: MiPantallaComanda(),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(primaryColor: Colors.pink),
     );
   }
 }
@@ -348,48 +344,62 @@ class MiPantallaComanda extends StatefulWidget {
 }
 
 class _MiPantallaComandaState extends State<MiPantallaComanda> {
+  final SupabaseClient supabase = Supabase.instance.client;
+
   List<Map<String, dynamic>> _categorias = [];
   Map<String, List<Map<String, dynamic>>> _datos = {};
-  Map<String, int> _seleccionados = {};
+  List<Map<String, dynamic>> _carrito = [];
+  Set<String> _expandedCategories = {};
+  bool _isLoading = true; // Añadido para controlar el estado de carga
 
   @override
   void initState() {
     super.initState();
-    _initializeDatabase();
+    _loadData();
   }
 
-  Future<Database> _initializeDatabase() async {
-    try {
-      final Future<Database> database = openDatabase(
-        path.join(await getDatabasesPath(), 'comanda_database.db'),
-        onCreate: (db, version) async {
-          try {
-            await db.execute(
-              "CREATE TABLE IF NOT EXISTS categorias(id INTEGER PRIMARY KEY, nombre TEXT)",
-            );
-            await db.execute(
-              "CREATE TABLE IF NOT EXISTS articulos(id INTEGER PRIMARY KEY, nombre TEXT, idCategoria INTEGER)",
-            );
-            await _actualizarEstructuraTablaArticulos(db);
-          } catch (e) {
-            print('Error creating tables: $e');
-          }
-        },
-        version: 1,
-      );
+  Future<void> _loadData() async {
+    await _loadCategories();
+    await _loadArticles();
+    setState(() {
+      _isLoading = false; // Datos cargados, se oculta el indicador de carga
+    });
+  }
 
-      final db = await database;
-      final categorias = await db.query('categorias');
+  Future<void> _loadCategories() async {
+    try {
+      final response = await supabase.from('categorias').select();
+      final categorias = response as List<dynamic>;
 
       setState(() {
-        _categorias = List<Map<String, dynamic>>.from(categorias);
+        _categorias = categorias
+            .map((categoria) => Map<String, dynamic>.from(categoria))
+            .toList();
       });
-
-      await _loadArticles(db);
-      return db;
     } catch (e) {
-      print('Error al inicializar la base de datos: $e');
-      throw e;
+      print('Error al cargar categorías: $e');
+    }
+  }
+
+  Future<void> _loadArticles() async {
+    try {
+      Map<String, List<Map<String, dynamic>>> newDatos = {};
+      for (final categoria in _categorias) {
+        final response = await supabase
+            .from('articulos')
+            .select()
+            .eq('idCategoria', categoria['id']);
+        final articulos = response as List<dynamic>;
+
+        newDatos[categoria['nombre']] = articulos
+            .map((articulo) => Map<String, dynamic>.from(articulo))
+            .toList();
+      }
+      setState(() {
+        _datos = newDatos;
+      });
+    } catch (e) {
+      print('Error al cargar artículos: $e');
     }
   }
 
@@ -407,7 +417,7 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
               },
               child: Text("Cancelar"),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 _deleteItem(item);
                 Navigator.of(context).pop();
@@ -422,234 +432,34 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
 
   void _deleteItem(Map<String, dynamic> item) async {
     try {
-      final db = await _initializeDatabase();
-      await db.delete(
-        'articulos',
-        where: 'id = ?',
-        whereArgs: [item['id']],
-      );
-      await db.close();
-      _loadArticles(await _initializeDatabase());
+      await supabase.from('articulos').delete().eq('id', item['id']);
+      _loadArticles();
     } catch (e) {
       print('Error al eliminar el artículo: $e');
     }
   }
 
-  Future<void> _actualizarEstructuraTablaArticulos(Database db) async {
-    try {
-      await db.execute(
-        "ALTER TABLE articulos ADD COLUMN sku TEXT",
-      );
-      print('Estructura de la tabla articulos actualizada correctamente.');
-    } catch (e) {
-      print('Error al actualizar la estructura de la tabla articulos: $e');
-    }
-  }
-
-  Future<void> _loadArticles(Database db) async {
-    try {
-      _datos.clear();
-      for (final categoria in _categorias) {
-        final nombreCategoria = categoria['nombre'].toString();
-        final articulos = await db.query(
-          'articulos',
-          where: 'idCategoria = ?',
-          whereArgs: [categoria['id']],
-        );
-        setState(() {
-          _datos[nombreCategoria] =
-              List<Map<String, dynamic>>.from(articulos ?? []);
-        });
-      }
-    } catch (e) {
-      print('Error loading articles: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Mi Comanda'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                _mostrarAgregarDatosScreen(context);
-              },
-              child: Text('Agregar Datos'),
-            ),
-            SizedBox(height: 20),
-            if (_datos.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _datos.entries.map((entry) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        entry.key,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Column(
-                        children: entry.value.map((item) {
-                          final sku = item['sku'].toString();
-                          final cantidadSeleccionada = _seleccionados[sku] ?? 0;
-                          return Column(
-                            children: [
-                              ListTile(
-                                title: Text(item['nombre'].toString()),
-                                subtitle: Text(sku),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove),
-                                      onPressed: () {
-                                        setState(() {
-                                          if (cantidadSeleccionada > 0) {
-                                            _seleccionados[sku] =
-                                                cantidadSeleccionada - 1;
-                                          }
-                                        });
-                                      },
-                                    ),
-                                    Text(cantidadSeleccionada.toString()),
-                                    IconButton(
-                                      icon: Icon(Icons.add),
-                                      onPressed: () {
-                                        setState(() {
-                                          _seleccionados[sku] =
-                                              cantidadSeleccionada + 1;
-                                        });
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.delete),
-                                      onPressed: () {
-                                        _confirmDelete(context, item);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Divider(),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                final articulosSeleccionados = _datos.values
-                    .expand((e) => e)
-                    .where((item) =>
-                        (_seleccionados[item['sku'].toString()] ?? 0) > 0)
-                    .toList();
-                _imprimirComanda(articulosSeleccionados);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // Cambia el color a verde
-              ),
-              child: Text('Imprimir Comanda'),
-            ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity, // Ajusta el ancho del SizedBox al máximo
-              child: ElevatedButton(
-                onPressed: () {
-                  _mostrarConfirmacionBorrado(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                      vertical:
-                          10), // Ajusta el padding vertical para hacerlo más pequeño
-                ),
-                child: Text('Borrar Base de Datos'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _borrarBaseDeDatos() async {
-    try {
-      // Obtiene la ruta de la base de datos
-      //String path = await getDatabasesPath();
-      String databasePath =
-          path.join(await getDatabasesPath(), 'comanda_database.db');
-
-      // Borra la base de datos si existe
-      bool exists = await databaseExists(databasePath);
-      if (exists) {
-        await deleteDatabase(databasePath);
-        print('Base de datos borrada exitosamente.');
-      } else {
-        print('La base de datos no existe.');
-      }
-    } catch (e) {
-      print('Error al borrar la base de datos: $e');
-      throw e;
-    }
-  }
-
-  _mostrarConfirmacionBorrado(BuildContext context) {
-    TextEditingController _controller = TextEditingController();
-
+  void _confirmDeleteCategoria(BuildContext context, String categoria) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmar Borrado'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                  'Introduce la contraseña para confirmar el borrado de la base de datos:'),
-              TextField(
-                controller: _controller,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Contraseña',
-                ),
-              ),
-            ],
-          ),
+          title: Text("Confirmación"),
+          content: Text(
+              "¿Estás seguro de que deseas eliminar esta categoría y todos sus artículos?"),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: Text("Cancelar"),
             ),
             ElevatedButton(
               onPressed: () {
-                String password = _controller.text;
-                if (password == 'mcl4r3n650s') {
-                  _borrarBaseDeDatos();
-                  Navigator.of(context).pop();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text(
-                        'Contraseña incorrecta. Por favor, inténtalo de nuevo.'),
-                  ));
-                }
+                _deleteCategoria(categoria);
+                Navigator.of(context).pop();
               },
-              child: Text('Confirmar'),
+              child: Text("Eliminar"),
             ),
           ],
         );
@@ -657,19 +467,268 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
     );
   }
 
-  void _mostrarAgregarDatosScreen(BuildContext context) async {
+  void _deleteCategoria(String categoria) async {
+    try {
+      final categoriaId = await _getCategoriaId(categoria);
+      await supabase.from('categorias').delete().eq('nombre', categoria);
+      await supabase.from('articulos').delete().eq('idCategoria', categoriaId);
+      _loadCategories();
+    } catch (e) {
+      print('Error al eliminar la categoría: $e');
+    }
+  }
+
+  Future<int> _getCategoriaId(String categoriaNombre) async {
+    final response = await supabase
+        .from('categorias')
+        .select('id')
+        .eq('nombre', categoriaNombre)
+        .single();
+    if (response != null) {
+      return response['id'];
+    } else {
+      throw Exception(
+          'La categoría seleccionada no existe en la base de datos.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('GongPrint'),
+      ),
+      body: _isLoading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    color: Colors.green,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Cargando información de la matrix...',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _mostrarAgregarArticuloScreen(context);
+                          },
+                          icon: Icon(
+                            Icons.add,
+                            color: Colors.pink,
+                          ),
+                          label: Text(
+                            'Agregar Artículo',
+                            style: TextStyle(color: Colors.pink),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            _mostrarAgregarCategoriaScreen(context);
+                          },
+                          icon: Icon(Icons.add, color: Colors.pink),
+                          label: Text(
+                            'Agregar Categoría',
+                            style: TextStyle(color: Colors.pink),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        if (_datos.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: _datos.entries.map((entry) {
+                              return ExpansionPanelList(
+                                expansionCallback:
+                                    (int index, bool isExpanded) {
+                                  setState(() {
+                                    _expandedCategories.contains(entry.key)
+                                        ? _expandedCategories.remove(entry.key)
+                                        : _expandedCategories.add(entry.key);
+                                  });
+                                },
+                                children: [
+                                  ExpansionPanel(
+                                    headerBuilder: (BuildContext context,
+                                        bool isExpanded) {
+                                      return ListTile(
+                                        title: Text(
+                                          entry.key,
+                                          style: TextStyle(
+                                            color: Colors.pink,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        trailing: IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            _confirmDeleteCategoria(
+                                                context, entry.key);
+                                          },
+                                        ),
+                                      );
+                                    },
+                                    body: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: entry.value.map((item) {
+                                        return ListTile(
+                                          title:
+                                              Text(item['nombre'].toString()),
+                                          subtitle: Text('SKU: ${item['sku']}'),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.add_shopping_cart,
+                                                  color: Colors.green,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _carrito.add(item);
+                                                  });
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  _confirmDelete(context, item);
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                    isExpanded:
+                                        _expandedCategories.contains(entry.key),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          ),
+                        SizedBox(height: 20),
+                        Text(
+                          'Carrito:',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        if (_carrito.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: _carrito.map((item) {
+                              return ListTile(
+                                title: Text(item['nombre'].toString()),
+                                subtitle: Text('SKU: ${item['sku']}'),
+                                trailing: IconButton(
+                                  icon: Icon(
+                                    Icons.remove_shopping_cart,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _carrito.remove(item);
+                                    });
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        if (_carrito.isEmpty)
+                          Text(
+                            'El carrito está vacío.',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _imprimirComanda(_carrito);
+                          },
+                          icon: Icon(
+                            Icons.print,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            'Imprimir Comanda',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            backgroundColor: Colors.pink,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  void _mostrarAgregarArticuloScreen(BuildContext context) async {
     final nuevosDatos = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AgregarDatosScreen(
+        builder: (context) => AgregarArticuloScreen(
           categoriasExistencias: _getCategoriasExistencias(),
-          onDatosGuardados: _onDatosGuardados,
+          onDatosGuardados: () async => await _onDatosGuardados(),
         ),
       ),
     );
 
     if (nuevosDatos != null) {
-      _loadArticles(await _initializeDatabase());
+      _loadArticles();
+    }
+  }
+
+  void _mostrarAgregarCategoriaScreen(BuildContext context) async {
+    final nuevaCategoria = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AgregarCategoriaScreen(
+          onCategoriaGuardada: () async => await _onDatosGuardados(),
+        ),
+      ),
+    );
+
+    if (nuevaCategoria != null) {
+      _loadCategories();
     }
   }
 
@@ -679,33 +738,35 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
         .toList();
   }
 
-  void _onDatosGuardados() async {
-    await _loadArticles(await _initializeDatabase());
+  Future<void> _onDatosGuardados() async {
+    await _loadArticles();
+    await _loadCategories();
   }
 
-  void _imprimirComanda(
-      List<Map<String, dynamic>> articulosSeleccionados) async {
+  void _imprimirComanda(List<Map<String, dynamic>> carrito) async {
     try {
       Map<String, int> cantidadPorSKU = {};
 
-      // Aggregate quantities of each item
-      for (var articulo in articulosSeleccionados) {
+      for (var articulo in carrito) {
         String sku = articulo["sku"].toString();
-        cantidadPorSKU[sku] =
-            (cantidadPorSKU[sku] ?? 0) + (_seleccionados[sku] ?? 0);
+
+        if (cantidadPorSKU.containsKey(sku)) {
+          cantidadPorSKU[sku] = cantidadPorSKU[sku]! + 1;
+        } else {
+          cantidadPorSKU[sku] = 1;
+        }
       }
 
       bool estadoConexion = await PrintBluetoothThermal.connectionStatus;
 
       if (estadoConexion) {
-        List<int> ticket = await pruebaTicket(cantidadPorSKU);
+        List<int> ticket = await _generarTicket(carrito, cantidadPorSKU);
         final resultado = await PrintBluetoothThermal.writeBytes(ticket);
 
         print("Resultado de la impresión de la comanda: $resultado");
 
-        // Reset selected quantities to zero after printing
         setState(() {
-          _seleccionados.clear();
+          _carrito.clear();
         });
       } else {
         print(
@@ -715,59 +776,62 @@ class _MiPantallaComandaState extends State<MiPantallaComanda> {
       print('Error al imprimir la comanda: $e');
     }
   }
-}
 
-Future<List<int>> pruebaTicket(Map<String, int> cantidadPorSKU) async {
-  List<int> bytes = [];
+  Future<List<int>> _generarTicket(List<Map<String, dynamic>> carrito,
+      Map<String, int> cantidadPorSKU) async {
+    List<int> bytes = [];
 
-  final perfil = await CapabilityProfile.load();
-  var tipoImpresion;
-  final generador = Generator(
-    tipoImpresion == "58 mm" ? PaperSize.mm58 : PaperSize.mm80,
-    perfil,
-  );
+    final perfil = await CapabilityProfile.load();
+    var tipoImpresion = "58 mm";
+    final generador = Generator(
+        tipoImpresion == "58 mm" ? PaperSize.mm58 : PaperSize.mm80, perfil);
 
-  bytes += generador.reset();
+    bytes += generador.reset();
 
-  bytes += generador.text('GONG CHA LIVERPOOL MAZATLAN',
-      styles: const PosStyles(
-        align: PosAlign.center,
-        fontType: PosFontType.fontA,
-      ));
-  bytes += generador.feed(2);
-  bytes += generador.text('Artículos Seleccionados:',
-      styles: const PosStyles(bold: true));
+    bytes += generador.text('GONG CHA LIVERPOOL MAZATLAN',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          fontType: PosFontType.fontA,
+        ));
+    bytes += generador.feed(2);
+    bytes += generador.text('Artículos Seleccionados:',
+        styles: const PosStyles(bold: true));
 
-  // Loop through the SKU quantities map
-  cantidadPorSKU.forEach((sku, cantidad) {
-    for (var i = 0; i < cantidad; i++) {
-      bytes += generador.text('SKU: $sku');
+    // Utilizamos un set para asegurarnos de imprimir cada artículo correctamente
+    Set<Map<String, dynamic>> articulosUnicos = carrito.toSet();
+    for (var articulo in articulosUnicos) {
+      String sku = articulo['sku'].toString();
+      String nombre = articulo['nombre'].toString();
+      int cantidad = cantidadPorSKU[sku] ?? 0;
+
+      bytes += generador.text('$nombre ');
       bytes += generador.barcode(Barcode.itf(sku.split('')));
-      bytes.add(10); // Add line feed
+      bytes.add(10);
     }
-  });
 
-  bytes += generador.feed(2);
-  bytes += generador.cut();
+    bytes += generador.feed(2);
+    bytes += generador.cut();
 
-  return bytes;
+    return bytes;
+  }
 }
 
-class AgregarDatosScreen extends StatefulWidget {
+class AgregarArticuloScreen extends StatefulWidget {
   final List<String> categoriasExistencias;
   final VoidCallback onDatosGuardados;
 
-  AgregarDatosScreen({
+  AgregarArticuloScreen({
     required this.categoriasExistencias,
     required this.onDatosGuardados,
   });
 
   @override
-  _AgregarDatosScreenState createState() => _AgregarDatosScreenState();
+  _AgregarArticuloScreenState createState() => _AgregarArticuloScreenState();
 }
 
-class _AgregarDatosScreenState extends State<AgregarDatosScreen> {
-  TextEditingController _controllerCategoria = TextEditingController();
+class _AgregarArticuloScreenState extends State<AgregarArticuloScreen> {
+  final SupabaseClient supabase = Supabase.instance.client;
+
   TextEditingController _controllerNombre = TextEditingController();
   TextEditingController _controllerSKU = TextEditingController();
   String _selectedCategoria = '';
@@ -776,58 +840,55 @@ class _AgregarDatosScreenState extends State<AgregarDatosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Agregar Datos'),
+        title: Text('Agregar Artículo'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value:
-                        _selectedCategoria.isEmpty ? null : _selectedCategoria,
-                    items: widget.categoriasExistencias
-                        .map((categoria) => DropdownMenuItem(
-                              child: Text(categoria),
-                              value: categoria,
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCategoria = value!;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Categoría',
-                    ),
-                  ),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _agregarNuevaCategoria,
-                  child: Text('Agregar Nueva'),
-                ),
-              ],
+            DropdownButtonFormField(
+              value: _selectedCategoria.isNotEmpty ? _selectedCategoria : null,
+              items: widget.categoriasExistencias
+                  .map((String categoria) => DropdownMenuItem(
+                        value: categoria,
+                        child: Text(categoria),
+                      ))
+                  .toList(),
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedCategoria = value!;
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Selecciona una Categoría',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 20),
             TextField(
               controller: _controllerNombre,
-              decoration: InputDecoration(labelText: 'Nombre del Artículo'),
+              decoration: InputDecoration(
+                labelText: 'Nombre del Artículo',
+                hintText: 'Escribe el nombre del artículo',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 20),
             TextField(
               controller: _controllerSKU,
-              decoration: InputDecoration(labelText: 'SKU'),
+              decoration: InputDecoration(
+                labelText: 'SKU',
+                hintText: 'Escribe el código SKU',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                _guardarDatos();
+                _guardarArticulo();
               },
-              child: Text('Guardar'),
+              child: Text('Guardar Artículo'),
             ),
           ],
         ),
@@ -835,132 +896,138 @@ class _AgregarDatosScreenState extends State<AgregarDatosScreen> {
     );
   }
 
-  void _agregarNuevaCategoria() async {
-    final nuevaCategoria = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Nueva Categoría'),
-          content: TextField(
-            controller: _controllerCategoria,
-            decoration: InputDecoration(labelText: 'Nombre de la Categoría'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(_controllerCategoria.text.trim());
-              },
-              child: Text('Agregar'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (nuevaCategoria != null && nuevaCategoria.isNotEmpty) {
-      try {
-        final db = await _openDatabase();
-        final result = await db.rawQuery(
-          'SELECT id FROM categorias WHERE nombre = ?',
-          [nuevaCategoria],
-        );
-
-        int categoriaId;
-
-        if (result.isNotEmpty) {
-          categoriaId = result.first['id'] as int;
-        } else {
-          categoriaId = await db.rawInsert(
-            'INSERT INTO categorias(nombre) VALUES(?)',
-            [nuevaCategoria],
-          );
-        }
-
-        await db.close();
-
-        setState(() {
-          widget.categoriasExistencias.add(nuevaCategoria);
-          _selectedCategoria = nuevaCategoria;
-        });
-      } catch (e) {
-        print('Error al agregar nueva categoría: $e');
-      }
-    }
-  }
-
-  void _guardarDatos() async {
-    if (_selectedCategoria.isEmpty ||
-        _controllerNombre.text.trim().isEmpty ||
-        _controllerSKU.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, completa todos los campos')),
-      );
-      return;
-    }
-
+  void _guardarArticulo() async {
     try {
-      final db = await _openDatabase();
-      final categoriaId = await _getCategoriaId(db, _selectedCategoria);
+      final nombre = _controllerNombre.text.trim();
+      final sku = _controllerSKU.text.trim();
 
-      await db.rawInsert(
-        'INSERT INTO articulos(nombre, sku, idCategoria) VALUES(?, ?, ?)',
-        [
-          _controllerNombre.text.trim(),
-          _controllerSKU.text.trim(),
-          categoriaId
-        ],
-      );
+      if (_selectedCategoria.isNotEmpty &&
+          nombre.isNotEmpty &&
+          sku.isNotEmpty) {
+        final categoriaId = await _getCategoriaId(_selectedCategoria);
+        await supabase.from('articulos').insert({
+          'nombre': nombre,
+          'idCategoria': categoriaId,
+          'sku': sku,
+        });
 
-      await db.close();
-
-      _selectedCategoria = '';
-      _controllerNombre.clear();
-      _controllerSKU.clear();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Los datos fueron guardados correctamente')),
-      );
-
-      widget.onDatosGuardados();
-
-      Navigator.pop(context);
+        _limpiarCampos();
+        widget.onDatosGuardados();
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Por favor, asegúrate de completar todos los campos antes de guardar los datos.'),
+        ));
+      }
     } catch (e) {
-      print('Error al guardar los datos: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ocurrió un error al guardar los datos')),
-      );
+      print('Error al guardar el artículo: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            'Error al guardar el artículo. Por favor, inténtalo de nuevo.'),
+      ));
     }
   }
 
-  Future<Database> _openDatabase() async {
-    return openDatabase(
-      path.join(await getDatabasesPath(), 'comanda_database.db'),
-      onCreate: (db, version) async {
-        try {
-          await db.execute(
-            "CREATE TABLE IF NOT EXISTS categorias(id INTEGER PRIMARY KEY, nombre TEXT)",
-          );
-          await db.execute(
-            "CREATE TABLE IF NOT EXISTS articulos(id INTEGER PRIMARY KEY, nombre TEXT, sku TEXT, idCategoria INTEGER)",
-          );
-        } catch (e) {
-          print('Error creating tables: $e');
-        }
-      },
-      version: 1,
-    );
-  }
-
-  Future<int> _getCategoriaId(Database db, String categoriaNombre) async {
-    final result = await db.rawQuery(
-      'SELECT id FROM categorias WHERE nombre = ?',
-      [categoriaNombre],
-    );
-    if (result.isNotEmpty) {
-      return result.first['id'] as int;
+  Future<int> _getCategoriaId(String categoriaNombre) async {
+    final response = await supabase
+        .from('categorias')
+        .select('id')
+        .eq('nombre', categoriaNombre)
+        .single();
+    if (response != null) {
+      return response['id'];
     } else {
       throw Exception(
           'La categoría seleccionada no existe en la base de datos.');
     }
+  }
+
+  void _limpiarCampos() {
+    _controllerNombre.clear();
+    _controllerSKU.clear();
+    setState(() {
+      _selectedCategoria = '';
+    });
+  }
+}
+
+class AgregarCategoriaScreen extends StatefulWidget {
+  final VoidCallback onCategoriaGuardada;
+
+  AgregarCategoriaScreen({
+    required this.onCategoriaGuardada,
+  });
+
+  @override
+  _AgregarCategoriaScreenState createState() => _AgregarCategoriaScreenState();
+}
+
+class _AgregarCategoriaScreenState extends State<AgregarCategoriaScreen> {
+  final SupabaseClient supabase = Supabase.instance.client;
+
+  TextEditingController _controllerCategoria = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Agregar Categoría'),
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _controllerCategoria,
+              decoration: InputDecoration(
+                labelText: 'Categoría',
+                hintText: 'Escribe el nombre de la categoría',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _guardarCategoria();
+              },
+              child: Text('Guardar Categoría'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _guardarCategoria() async {
+    try {
+      final categoria = _controllerCategoria.text.trim();
+
+      if (categoria.isNotEmpty) {
+        await supabase.from('categorias').insert({
+          'nombre': categoria,
+        });
+
+        _limpiarCampos();
+        widget.onCategoriaGuardada();
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Por favor, escribe el nombre de la categoría antes de guardar.'),
+        ));
+      }
+    } catch (e) {
+      print('Error al guardar la categoría: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            'Error al guardar la categoría. Por favor, inténtalo de nuevo.'),
+      ));
+    }
+  }
+
+  void _limpiarCampos() {
+    _controllerCategoria.clear();
   }
 }
